@@ -1,10 +1,10 @@
 package ru.practicum.shareit.user;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-@Repository
+@Component
 public class InMemoryUserRepository implements UserRepository {
     private final Map<Long, User> userStorage = new HashMap<>();
 

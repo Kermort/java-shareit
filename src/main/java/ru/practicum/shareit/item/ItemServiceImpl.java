@@ -14,8 +14,6 @@ import ru.practicum.shareit.user.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,63 +34,27 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("id не может быть пустым");
         }
 
-        Optional<Item> itemOpt = itemRepository.findById(id);
-        if (itemOpt.isEmpty()) {
-            throw new NotFoundException("вешь с id " + id + " не найдена.");
-        }
-
-        return ItemDtoMapper.toDto(itemOpt.get());
+        Item item = itemRepository.findById(id).orElseThrow(() -> new NotFoundException("вешь с id " + id + " не найдена."));
+        return ItemDtoMapper.toDto(item);
     }
 
-    public Item create(ItemDto newItemDto, Long userId) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) {
-            throw new NotFoundException("пользователь с id " + userId + "не найден");
-        }
+    public ItemDto create(ItemDto newItemDto, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("пользователь с id " + userId + "не найден"));
+        Item newItem = ItemDtoMapper.toModel(newItemDto);
+        newItem.setOwner(user);
 
-        Item newItem = ItemDtoMapper.fromDto(newItemDto, userId);
-        newItem.setOwner(userOpt.get());
-
-        return itemRepository.create(newItem);
+        return ItemDtoMapper.toDto(itemRepository.create(newItem));
     }
 
-    public Item update(Item newItem) {
-        if (newItem.getId() == null) {
-            throw new ValidationException("id не может быть пустым");
-        }
-
-        Optional<Item> itemOpt = itemRepository.findById(newItem.getId());
-        if (itemOpt.isEmpty()) {
-            throw new NotFoundException("вешь с id = " + newItem.getId() + " не найдена");
-        }
-
-        if (newItem.getName() == null || newItem.getName().isBlank()) {
-            newItem.setName(itemOpt.get().getName());
-        }
-
-        if (newItem.getDescription() == null || newItem.getDescription().isBlank()) {
-            newItem.setDescription(itemOpt.get().getDescription());
-        }
-
-        return itemRepository.update(newItem);
-    }
-
-    public Item patch(Long itemId, ItemDto newItemDto, Long userId) {
+    public ItemDto patch(Long itemId, ItemDto newItemDto, Long userId) {
         log.info("Попытка частичного обновления вещи с id {}", itemId);
-        Optional<Item> oldItemOpt = itemRepository.findById(itemId);
-        if (oldItemOpt.isEmpty()) {
-            throw new NotFoundException("не найдена вещь с id " + itemId);
-        }
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) {
-            throw new NotFoundException("пользователь с id " + userId + " не найден");
-        }
+        Item oldItem = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("не найдена вещь с id " + itemId));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("пользователь с id " + userId + " не найден"));
 
-        if (!Objects.equals(userOpt.get().getId(), userId)) {
+        if (!user.getId().equals(userId)) {
             throw new NotAuthorizedException("пользователь с id " + userId + " не является владельцем вещи с id " + itemId);
         }
-        Item newItem = ItemDtoMapper.fromDto(newItemDto, userId);
-        Item oldItem = oldItemOpt.get();
+        Item newItem = ItemDtoMapper.toModel(newItemDto);
 
         if (newItem.getName() != null) {
             oldItem.setName(newItem.getName());
@@ -105,7 +67,7 @@ public class ItemServiceImpl implements ItemService {
         }
 
         itemRepository.patch(oldItem);
-        return oldItem;
+        return ItemDtoMapper.toDto(oldItem);
     }
 
     public List<ItemDto> search(String text) {

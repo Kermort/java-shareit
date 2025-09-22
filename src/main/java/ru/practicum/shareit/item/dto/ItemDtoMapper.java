@@ -1,7 +1,9 @@
 package ru.practicum.shareit.item.dto;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.item.model.Item;
 
+@UtilityClass
 public class ItemDtoMapper {
     public static ItemDto toDto(Item item) {
         return ItemDto.builder()
@@ -13,9 +15,8 @@ public class ItemDtoMapper {
                 .build();
     }
 
-    public static Item fromDto(ItemDto dto, Long userId) {
+    public static Item toModel(ItemDto dto) {
         return Item.builder()
-                .id(userId)
                 .name(dto.getName())
                 .description(dto.getDescription())
                 .available(dto.getAvailable())

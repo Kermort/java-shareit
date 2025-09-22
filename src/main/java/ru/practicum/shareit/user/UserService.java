@@ -6,9 +6,12 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.DuplicateException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserDtoMapper;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -16,70 +19,48 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
 
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserDto> findAll() {
+        return userRepository.findAll().stream()
+                .map(UserDtoMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public User findById(Long id) {
+    public UserDto findById(Long id) {
         if (id == null) {
             throw new ValidationException("id не может быть пустым");
         }
 
-        Optional<User> userOpt = userRepository.findById(id);
-        if (userOpt.isEmpty()) {
-            throw new NotFoundException("пользователь с id " + id + " не найден.");
-        }
-
-        return userOpt.get();
+        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("пользователь с id " + id + " не найден."));
+        return UserDtoMapper.toDto(user);
     }
 
-    public User create(User newUser) {
+    public UserDto create(UserDto newUserDto) {
+        log.info("попытка создать пользователя c именем {} и почтой {}", newUserDto.getName(), newUserDto.getEmail());
+        User newUser = UserDtoMapper.toModel(newUserDto);
         if (userRepository.findByEmail(newUser.getEmail()).isPresent()) {
             throw new DuplicateException("Выбранный email уже используется");
         }
-        return userRepository.create(newUser);
+        log.info("пользователь c именем {} и почтой {} создан", newUserDto.getName(), newUserDto.getEmail());
+        return UserDtoMapper.toDto(userRepository.create(newUser));
     }
 
-    public User update(User newUser) {
-        if (newUser.getId() == null) {
-            throw new ValidationException("id не может быть пустым");
-        }
-
-        Optional<User> userOpt = userRepository.findById(newUser.getId());
-        if (userOpt.isEmpty()) {
-            throw new NotFoundException("пользователь с id = " + newUser.getId() + " не найден");
-        }
-
-        if (!userOpt.get().getEmail().equals(newUser.getEmail())
-                && userRepository.findByEmail(newUser.getEmail()).isPresent()) {
-            throw new ValidationException("Выбранный email уже используется");
-        }
-
-        if (newUser.getName() == null || newUser.getName().isBlank()) {
-            newUser.setName(userOpt.get().getName());
-        }
-
-        return userRepository.update(newUser);
-    }
-
-    public User patch(Long userId, User newUser) {
+    public UserDto patch(Long userId, UserDto newUserDto) {
         log.info("Попытка частичного обновления пользователя с id {}", userId);
-        Optional<User> oldUserOpt = userRepository.findById(userId);
-        if (oldUserOpt.isEmpty()) {
-            throw new NotFoundException("не найден пользователь с id " + userId);
-        }
-        User oldUser = oldUserOpt.get();
-        if (newUser.getEmail() != null) {
-            Optional<User> userByEmailOpt = userRepository.findByEmail(newUser.getEmail());
-            if (userByEmailOpt.isPresent()) {
+        User oldUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("не найден пользователь с id " + userId));
+
+        if (newUserDto.getEmail() != null) {
+            Optional<User> userByEmailOpt = userRepository.findByEmail(newUserDto.getEmail());
+            if (userByEmailOpt.isPresent() && !userId.equals(userByEmailOpt.get().getId())) {
                 throw new DuplicateException("Выбранный email недоступен");
             }
-            oldUser.setEmail(newUser.getEmail());
+            oldUser.setEmail(newUserDto.getEmail());
         }
-        if (newUser.getName() != null) {
-            oldUser.setName(newUser.getName());
+        if (newUserDto.getName() != null) {
+            oldUser.setName(newUserDto.getName());
         }
-        return oldUser;
+        userRepository.update(oldUser);
+
+        return UserDtoMapper.toDto(oldUser);
     }
 
     public int delete(Long userId) {

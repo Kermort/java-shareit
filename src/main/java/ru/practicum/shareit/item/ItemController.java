@@ -5,14 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- * TODO Вам нужно реализовать добавление новых вещей, их редактирование, просмотр списка вещей и поиск
- */
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
@@ -30,17 +25,12 @@ public class ItemController {
     }
 
     @PostMapping
-    public Item create(@Valid @RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public ItemDto create(@Valid @RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemService.create(itemDto, userId);
     }
 
-    @PutMapping
-    public Item update(@Valid @RequestBody Item newItem) {
-        return itemService.update(newItem);
-    }
-
     @PatchMapping("/{itemId}")
-    public Item patch(@PathVariable Long itemId,
+    public ItemDto patch(@PathVariable Long itemId,
                       @RequestBody ItemDto newItemDto,
                       @RequestHeader("X-Sharer-User-Id") Long userId
                       ) {
