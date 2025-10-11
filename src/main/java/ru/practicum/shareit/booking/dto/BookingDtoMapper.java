@@ -20,22 +20,21 @@ public class BookingDtoMapper {
                 .build();
     }
 
-    public static Booking toModel(BookingDto dto, Item item, User user) {
-        return Booking.builder()
-                .start(dto.getStart())
-                .end(dto.getEnd())
-                .status(dto.getStatus())
-                .item(item)
-                .booker(user)
-                .build();
-    }
-
     public static Booking toModel(BookingRequestDto dto, Item item, User user) {
         return Booking.builder()
                 .start(dto.getStart())
                 .end(dto.getEnd())
                 .item(item)
                 .booker(user)
+                .build();
+    }
+
+    public static BookingForItemInfoDto toItemInfoDto(Booking booking) {
+        return BookingForItemInfoDto.builder()
+                .id(booking.getId())
+                .start(booking.getStart())
+                .end(booking.getEnd())
+                .bookerId(booking.getBooker().getId())
                 .build();
     }
 }

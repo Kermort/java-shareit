@@ -112,9 +112,9 @@ public class BookingServiceImpl implements BookingService {
         switch (bookingState) {
             case ALL -> bookings = bookingRepository.findAllByBookerId(bookerId);
             case WAITING, REJECTED -> bookings = bookingRepository.findAllByBookerIdAndStatus(bookerId, BookingStatus.valueOf(bookingState.name()));
-            case CURRENT -> bookings = bookingRepository.findCurrentBookingsByBookerIdAndStatus(bookerId, now, BookingStatus.APPROVED);
-            case PAST -> bookings = bookingRepository.findPastBookingsByBookerIdAndStatus(bookerId, now, BookingStatus.APPROVED);
-            case FUTURE -> bookings = bookingRepository.findFutureBookingsByBookerIdAndStatus(bookerId, now, BookingStatus.APPROVED);
+            case CURRENT -> bookings = bookingRepository.findCurrentBookingsByBookerId(bookerId, now);
+            case PAST -> bookings = bookingRepository.findPastBookingsByBookerId(bookerId, now);
+            case FUTURE -> bookings = bookingRepository.findFutureBookingsByBookerId(bookerId, now);
         }
 
         return bookings.stream()
@@ -125,6 +125,7 @@ public class BookingServiceImpl implements BookingService {
     /**
      * Получение списка бронирований для всех вещей текущего пользователя
      */
+    @Override
     public List<BookingDto> findBookingsByOwnerAndState(Long ownerId, String state) {
         log.info("запрос на получение бронирований своих вещей пользователя с id {}", ownerId);
         if (ownerId == null) {
@@ -142,18 +143,18 @@ public class BookingServiceImpl implements BookingService {
         try {
             bookingState = BookingState.valueOf(state);
         } catch (IllegalArgumentException e) {
-            bookingState = BookingState.ALL;
+            throw new ValidationException("ошибка в параметре запроса state");
         }
 
         List<Booking> bookings = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
 
         switch (bookingState) {
-            case ALL -> bookings = bookingRepository.findAllByOwnerId(ownerId, itemIds);
-            case WAITING, REJECTED -> bookings = bookingRepository.findAllByOwnerIdAndStatus(ownerId, itemIds, BookingStatus.valueOf(bookingState.name()));
-            case CURRENT -> bookings = bookingRepository.findCurrentBookingsByOwnerIdAndStatus(ownerId, itemIds, now, BookingStatus.APPROVED);
-            case PAST -> bookings = bookingRepository.findPastBookingsByOwnerIdAndStatus(ownerId, itemIds, now, BookingStatus.APPROVED);
-            case FUTURE -> bookings = bookingRepository.findFutureBookingsByOwnerIdAndStatus(ownerId, itemIds, now, BookingStatus.APPROVED);
+            case ALL -> bookings = bookingRepository.findAllByOwnerId(ownerId);
+            case WAITING, REJECTED -> bookings = bookingRepository.findAllByOwnerIdAndStatus(ownerId, BookingStatus.valueOf(bookingState.name()));
+            case CURRENT -> bookings = bookingRepository.findCurrentBookingsByOwnerId(ownerId, now);
+            case PAST -> bookings = bookingRepository.findPastBookingsByOwnerId(ownerId, now);
+            case FUTURE -> bookings = bookingRepository.findFutureBookingsByOwnerId(ownerId, now);
         }
 
         return bookings.stream()

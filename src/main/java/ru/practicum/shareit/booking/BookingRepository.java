@@ -25,11 +25,24 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE b.booker.id = :bookerId " +
             "AND b.start <= :now " +
             "AND b.end >= :now " +
-            "AND b.status = :status " +
             "ORDER BY b.end DESC ")
-    List<Booking> findCurrentBookingsByBookerIdAndStatus(@Param("bookerId") Long bookerId,
-                                                         @Param("now") LocalDateTime now,
-                                                         @Param("status") BookingStatus status);
+    List<Booking> findCurrentBookingsByBookerId(@Param("bookerId") Long bookerId,
+                                                         @Param("now") LocalDateTime now);
+
+    @Query("SELECT b FROM Booking b " +
+            "WHERE b.booker.id = :bookerId " +
+            "AND b.end < :now " +
+            "ORDER BY b.end DESC ")
+    List<Booking> findPastBookingsByBookerId(@Param("bookerId") Long bookerId,
+                                                      @Param("now") LocalDateTime now);
+
+    @Query("SELECT b FROM Booking b " +
+            "WHERE b.booker.id = :bookerId " +
+            "AND b.start > :now " +
+            "ORDER BY b.end DESC ")
+
+    List<Booking> findFutureBookingsByBookerId(@Param("bookerId") Long bookerId,
+                                                        @Param("now") LocalDateTime now);
 
     @Query("SELECT b FROM Booking b " +
             "WHERE b.booker.id = :bookerId " +
@@ -40,67 +53,42 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                                       @Param("now") LocalDateTime now,
                                                       @Param("status") BookingStatus status);
 
-    @Query("SELECT b FROM Booking b " +
-            "WHERE b.booker.id = :bookerId " +
-            "AND b.start > :now " +
-            "AND b.status = :status " +
-            "ORDER BY b.end DESC ")
-    List<Booking> findFutureBookingsByBookerIdAndStatus(@Param("bookerId") Long bookerId,
-                                                        @Param("now") LocalDateTime now,
-                                                        @Param("status") BookingStatus status);
-
     @Query("SELECT b " +
             "FROM Booking b " +
             "WHERE b.item.owner.id = :ownerId " +
-            "AND b.item.id IN :itemIds " +
-            "ORDER BY b.start DESC "
-    )
-    List<Booking> findAllByOwnerId(@Param("ownerId") Long bookerIdId,
-                                   @Param("itemIds") List<Long> itemIds);
+            "ORDER BY b.start DESC ")
+    List<Booking> findAllByOwnerId(@Param("ownerId") Long bookerIdId);
 
     @Query("SELECT b " +
             "FROM Booking b " +
             "WHERE b.item.owner.id = :ownerId " +
             "AND b.status = :status " +
-            "AND b.item.id IN :itemIds " +
             "ORDER BY b.start DESC ")
     List<Booking> findAllByOwnerIdAndStatus(@Param("ownerId") Long ownerId,
-                                            @Param("itemIds") List<Long> itemIds,
                                             @Param("status") BookingStatus status);
 
     @Query("SELECT b FROM Booking b " +
             "WHERE b.item.owner.id = :ownerId " +
             "AND b.start <= :now " +
             "AND b.end >= :now " +
-            "AND b.status = :status " +
-            "AND b.item.id IN :itemIds " +
             "ORDER BY b.end DESC ")
-    List<Booking> findCurrentBookingsByOwnerIdAndStatus(@Param("ownerId") Long bookerId,
-                                                        @Param("itemIds") List<Long> itemIds,
-                                                        @Param("now") LocalDateTime now,
-                                                        @Param("status") BookingStatus status);
+    List<Booking> findCurrentBookingsByOwnerId(@Param("ownerId") Long bookerId,
+                                               @Param("now") LocalDateTime now);
 
     @Query("SELECT b FROM Booking b " +
             "WHERE b.item.owner.id = :ownerId " +
             "AND b.end < :now " +
-            "AND b.status = :status " +
-            "AND b.item.id IN :itemIds " +
             "ORDER BY b.end DESC ")
-    List<Booking> findPastBookingsByOwnerIdAndStatus(@Param("ownerId") Long ownerId,
-                                                     @Param("itemIds") List<Long> itemIds,
-                                                     @Param("now") LocalDateTime now,
-                                                     @Param("status") BookingStatus status);
+
+    List<Booking> findPastBookingsByOwnerId(@Param("ownerId") Long ownerId,
+                                            @Param("now") LocalDateTime now);
 
     @Query("SELECT b FROM Booking b " +
             "WHERE b.item.owner.id = :ownerId " +
             "AND b.start > :now " +
-            "AND b.status = :status " +
-            "AND b.item.id IN :itemIds " +
             "ORDER BY b.end DESC ")
-    List<Booking> findFutureBookingsByOwnerIdAndStatus(@Param("ownerId") Long ownerId,
-                                                       @Param("itemIds") List<Long> itemIds,
-                                                       @Param("now") LocalDateTime now,
-                                                       @Param("status") BookingStatus status);
+    List<Booking> findFutureBookingsByOwnerId(@Param("ownerId") Long ownerId,
+                                              @Param("now") LocalDateTime now);
 
     @Query("SELECT b FROM Booking b " +
             "WHERE b.item.id IN :itemIds " +

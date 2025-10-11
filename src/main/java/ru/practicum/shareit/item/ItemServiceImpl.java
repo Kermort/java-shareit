@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.booking.dto.BookingDtoMapper;
+import ru.practicum.shareit.booking.dto.BookingForItemInfoDto;
 import ru.practicum.shareit.exception.NotAuthorizedException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
@@ -49,13 +51,11 @@ public class ItemServiceImpl implements ItemService {
                         lastBookings.stream()
                                 .filter(b -> b.getItem().getId().equals(item.getId()))
                                 .max(Comparator.comparing(Booking::getEnd))
-                                .map(Booking::getEnd)
-                                .stream().findAny().orElse(null),
+                                .map(BookingDtoMapper::toItemInfoDto).orElse(null),
                         nextBookings.stream()
                                 .filter(b -> b.getItem().getId().equals(item.getId()))
                                 .min(Comparator.comparing(Booking::getStart))
-                                .map(Booking::getStart)
-                                .stream().findAny().orElse(null),
+                                .map(BookingDtoMapper::toItemInfoDto).orElse(null),
                         comments.stream()
                                 .filter(c -> c.getItem().getId().equals(item.getId()))
                                 .map(CommentDtoMapper::toDto)
@@ -82,10 +82,11 @@ public class ItemServiceImpl implements ItemService {
         }
         List<Booking> lastBookings = bookingRepository.findLastBookingsByItemIdsAndStatus(List.of(itemId), now, BookingStatus.APPROVED);
         List<Booking> nextBookings = bookingRepository.findNextBookingsByItemIdsAndStatus(List.of(itemId), now, BookingStatus.APPROVED);
-        LocalDateTime lastBookingDate = lastBookings.stream().map(Booking::getEnd).max(LocalDateTime::compareTo).orElse(null);
-        LocalDateTime nextBookingDate = nextBookings.stream().map(Booking::getStart).min(LocalDateTime::compareTo).orElse(null);
-        log.info("вещь с id {} last booking = {} now = {} next booking = {}", item.getId(), lastBookingDate, now, nextBookingDate);
-        return ItemDtoMapper.toListViewDto(item, lastBookingDate, nextBookingDate, comments);
+        BookingForItemInfoDto lastBooking = lastBookings.stream().max(Comparator.comparing(Booking::getEnd))
+                .map(BookingDtoMapper::toItemInfoDto).orElse(null);
+        BookingForItemInfoDto nextBooking = nextBookings.stream().min(Comparator.comparing(Booking::getStart))
+                .map(BookingDtoMapper::toItemInfoDto).orElse(null);
+        return ItemDtoMapper.toListViewDto(item, lastBooking, nextBooking, comments);
     }
 
     /**
