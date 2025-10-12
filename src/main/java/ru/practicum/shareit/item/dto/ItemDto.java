@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * dto запроса и ответа о создании
+ */
 @Data
 @Builder
 public class ItemDto {
