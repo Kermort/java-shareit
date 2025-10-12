@@ -37,4 +37,13 @@ public class ItemDtoMapper {
                 .comments(comments)
                 .build();
     }
+
+    public static ItemForRequestInfoDto toRequestInfoDto(Item item) {
+        return ItemForRequestInfoDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .ownerId(item.getOwner().getId())
+                .requestId(item.getRequest().getId())
+                .build();
+    }
 }

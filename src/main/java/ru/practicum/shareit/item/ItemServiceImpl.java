@@ -15,6 +15,8 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -33,6 +35,7 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     /**
      * получение всех вещей пользователя по его id с бронированиями и комментариями
@@ -98,6 +101,10 @@ public class ItemServiceImpl implements ItemService {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("пользователь с id " + userId + "не найден"));
         Item newItem = ItemDtoMapper.toModel(newItemDto);
         newItem.setOwner(user);
+        if (newItemDto.getRequestId() != null) {
+            ItemRequest itemRequest = itemRequestRepository.findById(newItemDto.getRequestId()).orElse(null);
+            newItem.setRequest(itemRequest);
+        }
 
         return ItemDtoMapper.toDto(itemRepository.save(newItem));
     }
