@@ -93,18 +93,12 @@ public class BookingServiceImpl implements BookingService {
      * Получение списка всех бронирований текущего пользователя
      */
     @Override
-    public List<BookingDto> findBookingsByBookerAndState(Long bookerId, String state) {
+    public List<BookingDto> findBookingsByBookerAndState(Long bookerId, BookingState bookingState) {
         if (bookerId == null) {
             throw new ValidationException("не указан id пользователя");
         }
         log.info("запрос на получение бронирований пользователя с id {}", bookerId);
         User booker = userRepository.findById(bookerId).orElseThrow(() -> new NotFoundException("пользователь с id " + bookerId + " не найден"));
-        BookingState bookingState;
-        try {
-            bookingState = BookingState.valueOf(state);
-        } catch (IllegalArgumentException e) {
-            bookingState = BookingState.ALL;
-        }
 
         List<Booking> bookings = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
@@ -126,7 +120,7 @@ public class BookingServiceImpl implements BookingService {
      * Получение списка бронирований для всех вещей текущего пользователя
      */
     @Override
-    public List<BookingDto> findBookingsByOwnerAndState(Long ownerId, String state) {
+    public List<BookingDto> findBookingsByOwnerAndState(Long ownerId, BookingState bookingState) {
         log.info("запрос на получение бронирований своих вещей пользователя с id {}", ownerId);
         if (ownerId == null) {
             throw new ValidationException("id пользователя пустой");
@@ -135,15 +129,6 @@ public class BookingServiceImpl implements BookingService {
         List<Item> items = itemRepository.findByOwnerId(ownerId);
         if (items.isEmpty()) {
             throw new NotFoundException("у пользователя нет вещей");
-        }
-
-        List<Long> itemIds = items.stream().map(Item::getId).toList();
-
-        BookingState bookingState;
-        try {
-            bookingState = BookingState.valueOf(state);
-        } catch (IllegalArgumentException e) {
-            throw new ValidationException("ошибка в параметре запроса state");
         }
 
         List<Booking> bookings = new ArrayList<>();
