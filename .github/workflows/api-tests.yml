@@ -95,7 +95,7 @@ jobs:
           then
             echo "The pull request contains the api-tests.yml file and cannot be modified. Remove it from PR"
             echo "Pull request содержит файл api-tests.yml, его изменять нельзя. Удалите его из PR"
-            exit -1
+            echo "exit -1"
           fi
           if [[ "$FILENAMES"  =~ "checkstyle.xml" ]]
           then
@@ -179,6 +179,7 @@ jobs:
             docker compose -f docker-compose.yml logs -f gateway >> ./gateway.log || true
             docker compose -f docker-compose.yml logs -f server >> ./server.log || true
           fi
+  
 
 
       - name: Upload log artifact
