@@ -36,14 +36,3 @@ public class ItemRequestDtoMapper {
                 .build();
     }
 }
-
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//      private Long id;
-//    @Column(name = "description")
-//      private String description;
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id")
-//      private User requestor;
-//    @Column(name = "created")
-//      private LocalDateTime created;

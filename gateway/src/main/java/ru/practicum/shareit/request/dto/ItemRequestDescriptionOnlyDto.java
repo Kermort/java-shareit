@@ -1,8 +1,10 @@
 package ru.practicum.shareit.request.dto;
 
-import lombok.Getter;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 
-@Getter
+@Data
 public class ItemRequestDescriptionOnlyDto {
+    @NotNull
     private String description;
 }

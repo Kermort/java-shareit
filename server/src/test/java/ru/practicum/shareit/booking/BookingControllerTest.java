@@ -58,24 +58,6 @@ public class BookingControllerTest {
 
     @SneakyThrows
     @Test
-    void create_whenBookingIsNotValid_thenStatusIsBadRequest() {
-        Long userId = 1L;
-        BookingRequestDto newBookingDto = BookingRequestDto.builder()
-                .start(LocalDateTime.now().plusDays(1))
-                .end(LocalDateTime.now().plusDays(2))
-                .build();
-
-        mockMvc.perform(post("/bookings")
-                        .header("X-Sharer-User-Id", userId)
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(newBookingDto)))
-                .andExpect(status().isBadRequest());
-
-        verify(bookingService, never()).create(any(BookingRequestDto.class), anyLong());
-    }
-
-    @SneakyThrows
-    @Test
     void approveBooking_whenSuccess_thenStatusIsOk() {
         Long userId = 1L;
         Long bookingId = 1L;

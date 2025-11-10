@@ -96,22 +96,6 @@ public class UserControllerTest {
 
     @SneakyThrows
     @Test
-    void create_whenUserIsNotValid_thenStatusIsBadRequest() {
-        UserDto newUserDto = UserDto.builder()
-                .name("name")
-                .email("invalid-email")
-                .build();
-
-        mockMvc.perform(post("/users")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(newUserDto)))
-                .andExpect(status().isBadRequest());
-
-        verify(userService, never()).create(newUserDto);
-    }
-
-    @SneakyThrows
-    @Test
     void patch_whenSuccess_thenStatusIsOkAndReturnUSerDto() {
         Long userId = 1L;
         UserDto patchedUserDto = UserDto.builder()
